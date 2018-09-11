@@ -1,3 +1,4 @@
+import Autocomplete from 'react-autocomplete';
 import React, { Component } from 'react';
 
 import constants from '../constants';
@@ -15,42 +16,43 @@ export default class TagFilter extends Component {
     const { query, selectedKeywords } = this.state;
     const data = query.trim() === '' ? [] : this.props.options.filter(tag => tag.indexOf(query.toLowerCase().trim()) > -1).sort(this.sortAutocompleteData);
     return (
-      <div>
-        <div>
-          {this.renderSelectedKeywords()}
-        </div>
-        <div>
-          <input />
-          <div>
-            <span>Here is a sample of tags that users have used on art matching your interests, tap to add them</span>
-            {this.renderRandomTags()}
-          </div>
-        </div>
+      <div className="tag-filter">
+        {this.renderSelectedKeywords()}
+        <Autocomplete
+          getItemValue={item => item}
+          items={data}
+          renderItem={(item, isHighlighted) => <div key={item} className={isHighlighted ? 'autocomplete-item highlighted' : 'autocomplete-item'}>{item}</div>}
+          renderInput={props => <input ref={node => this.autocompleteInput = node} className="autocomplete-input" {...props} />}
+          open={data.length > 0}
+          value={query}
+          onChange={(e) => this.setState({ query: e.target.value || '' })}
+          onSelect={this.handleSelectTag}
+          wrapperStyle={{ display: 'flex', flex: 1 }}
+        />
+        <span className="random-tags-label">Here is a sample of tags that users have used on art matching your interests, tap to add them</span>
+        {this.renderRandomTags()}
       </div>
     );
   }
 
   renderSelectedKeywords() {
-    if (this.state.selectedKeywords.size === 0) return <span className="keywords-placeholder">Your selected keywords will appear here</span>
+    if (this.state.selectedKeywords.size === 0) return <div className="selected-tags"><span className="keywords-placeholder">Your selected keywords will appear here</span></div>
     return (
-      <div>
+      <div className="selected-tags">
         {Array.from(this.state.selectedKeywords).map(this.renderSelectedKeyword)}
       </div>
     );
   }
 
-  renderSelectedKeyword = (keyword, idx, arr) => {
-    const final = idx === arr.length - 1;
-    return (
-      <button key={idx} onClick={this.removeSelectedKeyword.bind(this, keyword)}>{keyword}{final ? null : ', '}</button>
-    );
+  renderSelectedKeyword = (keyword, idx) => {
+    return <button className="selected-tag" key={idx} onClick={this.removeSelectedKeyword.bind(this, keyword)}>{keyword}</button>;
   }
 
   renderRandomTags() {
     if (!this.props.randomTags) return;
     this.fontSizes = this.fontSizes || [];
     return (
-      <div class="random-tags-container">
+      <div className="random-tags-container">
         {this.props.randomTags.map(this.renderRandomTag)}
       </div>
     );
@@ -60,7 +62,7 @@ export default class TagFilter extends Component {
     const { selectedKeywords } = this.state;
     this.fontSizes[idx] = this.fontSizes[idx] ? this.fontSizes[idx] : Math.random() < 0.08 ? 26 : Math.random() < 0.2 ? 22 : 16;
     return (
-      <button className="random-tag" key={idx} onClick={this.addSelectedKeyword.bind(this, tag.tag)}>{tag.tag}</button>
+      <button className="random-tag" style={{ fontSize: this.fontSizes[idx] + 'px' }} key={idx} onClick={this.addSelectedKeyword.bind(this, tag.tag)}>{tag.tag}</button>
     );
   }
 
@@ -80,10 +82,8 @@ export default class TagFilter extends Component {
     return Array.from(result).map(tag => ({ tag, popularityLevel }));
   }
 
-  handleSubmitTagForm = data => {
-    const query = this.state.query.toLowerCase().trim();
-    if (!data.includes(query)) return;
-    this.addSelectedKeyword(query, true);
+  handleSelectTag = tag => {
+    this.addSelectedKeyword(tag, true);
   }
 
   addSelectedKeyword(keyword, clearQuery) {

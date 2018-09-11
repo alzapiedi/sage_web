@@ -5,7 +5,7 @@ import constants from './constants';
 import ClassificationFilter from 'components/ClassificationFilter';
 import CountryFilter from 'components/CountryFilter';
 import TagFilter from 'components/TagFilter';
-// import Tour from 'components/Tour';
+import Tour from 'components/Tour';
 
 const API_BASE_URL = 'http://localhost:9000';
 const FILTER_KEYS = ['classifications', 'countries', 'tags'];
@@ -28,9 +28,11 @@ export default class App extends Component {
   }
 
   renderTour() {
-    // return (
-    //   <Tour createTag={this.createTag} onReset={this.reset} tour={this.state.tour} />
-    // );
+    return (
+      <div className="sage-body">
+        <Tour createTag={this.createTag} onReset={this.reset} tour={this.state.tour} />
+      </div>
+    );
   }
 
   renderClassificationFilter() {
